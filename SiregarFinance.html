@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siregar Finance | Infinite Token Flow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        html, body { height: 100vh; margin: 0; overflow: hidden; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { display: flex; flex-direction: column; background-color: #ffffff; color: #101828; transition: background 0.3s; }
+        body.dark-mode { background-color: #0b0f19; color: white; }
+        
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.6; pointer-events: none; }
+
+        header { padding: 20px 60px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
+
+        .brand-text { font-size: 1.25rem; font-weight: 900; letter-spacing: -0.02em; color: #5c3bb1; margin-top: 4px; margin-left: -4px; }
+        .arc-brand-gradient { background: linear-gradient(90deg, #5c3bb1 0%, #b8256a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .nav-link { cursor: pointer; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; transition: 0.2s; color: #667085; }
+        .nav-link:hover, .nav-link.active { color: #4f46e5; }
+        body.dark-mode .nav-link { color: #98a2b3; }
+
+        .drop-container { position: relative; }
+        .ui-pill { background-color: #f3f4f6; padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid #e5e7eb; transition: 0.3s; }
+        body.dark-mode .ui-pill { background-color: #1f242f; border-color: #2d333f; color: white; }
+        
+        .drop-menu { position: absolute; top: 120%; right: 0; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: none; min-width: 220px; z-index: 100; padding: 12px; border: 1px solid #f0f0f0; }
+        body.dark-mode .drop-menu { background: #161b26; border-color: #1f242f; }
+
+        .lang-item { display: flex; align-items: center; gap: 12px; padding: 10px 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-weight: 600; color: #101828; }
+        body.dark-mode .lang-item { color: #e4e7eb; }
+        .lang-item:hover { background: #f5f7ff; color: #4338ca; }
+        body.dark-mode .lang-item:hover { background: #232936; }
+        .lang-code { font-size: 10px; text-transform: uppercase; opacity: 0.7; width: 20px; font-weight: 800; }
+
+        .view-section { display: none; flex: 1; flex-direction: column; animation: fadeIn 0.4s ease; }
+        .view-section.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hero-title { font-size: 3.5rem; font-weight: 800; line-height: 1.1; color: #4a3396; letter-spacing: -0.02em; }
+        .hero-desc { font-size: 16.5px; font-weight: 600; color: #475467; max-width: 750px; margin: 0 auto; line-height: 1.6; }
+
+        .marquee-container { width: 100%; overflow: hidden; padding: 10px 0; position: relative; }
+        .marquee-content { display: flex; gap: 20px; width: max-content; }
+        .animate-left { animation: scrollLeft 50s linear infinite; }
+        .animate-right { animation: scrollRight 50s linear infinite; }
+        @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes scrollRight { 0% { transform: translateX(-50%); } 100% { transform: translateX(0); } }
+
+        .token-card { 
+            display: flex; align-items: center; gap: 10px; padding: 10px 22px; 
+            border: 1.5px solid #4f46e5; border-radius: 50px; background: white; 
+            min-width: fit-content; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.1);
+        }
+        body.dark-mode .token-card { background: #161b26; border-color: #4f46e5; }
+
+        .bottom-branding { text-align: center; padding-bottom: 25px; margin-top: auto; }
+        .sub-footer-label { font-size: 11px; font-weight: 700; letter-spacing: 0.5em; color: #5839b5; margin-bottom: 5px; }
+        .hero-footer { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+    </style>
+</head>
+<body onclick="closeAll()">
+    <canvas id="bg-canvas"></canvas>
+
+    <header>
+        <div class="flex items-center gap-2">
+            <img src="Adobe Express - file (1)_2.png" alt="Logo" style="width:48px; height:auto;">
+            <div class="brand-text uppercase">SIREGAR FINANCE</div>
+        </div>
+
+        <nav class="hidden lg:flex gap-8" id="mainNav">
+            <a onclick="showView('dasbor')" class="nav-link active">BERANDA</a>
+            <a onclick="showView('portofolio')" class="nav-link">PORTOFOLIO</a>
+            <a onclick="showView('swap')" class="nav-link">SWAP</a>
+            <a onclick="showView('pools')" class="nav-link">POOLS</a>
+            <a onclick="showView('stake')" class="nav-link">STAKE</a>
+            <a onclick="showView('future')" class="nav-link">FUTURE <span class="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded ml-1">NEW</span></a>
+        </nav>
+
+        <div class="flex items-center gap-4">
+            <i class="fas fa-moon text-gray-400 cursor-pointer text-lg" id="modeToggle"></i>
+            <div class="drop-container" onclick="event.stopPropagation()">
+                <div class="ui-pill !bg-[#4338ca] !text-white !border-none" onclick="toggleDrop('langMenu')">
+                    <span id="curLang">ID</span> <i class="fas fa-chevron-down text-[10px]"></i>
+                </div>
+                <div id="langMenu" class="drop-menu">
+                    <div class="lang-item" onclick="setLang('ID', 'Indonesia')"><span class="lang-code">ID</span> Indonesia</div>
+                    <div class="lang-item" onclick="setLang('US', 'English')"><span class="lang-code">US</span> English</div>
+                    <div class="lang-item" onclick="setLang('JP', '日本語')"><span class="lang-code">JP</span> 日本語</div>
+                    <div class="lang-item" onclick="setLang('KR', '한국어')"><span class="lang-code">KR</span> 한국어</div>
+                    <div class="lang-item" onclick="setLang('MD', 'Mandailing')"><span class="lang-code">MD</span> Mandailing</div>
+                </div>
+            </div>
+            <button id="connectBtn" onclick="connectWallet()" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase transition-all hover:scale-105">
+                Connect Wallet
+            </button>
+        </div>
+    </header>
+
+    <!-- VIEW BERANDA[cite: 1] -->
+    <main id="view-dasbor" class="view-section active">
+        <div class="flex-1 flex flex-col items-center justify-start text-center px-4 pt-8">
+            <h1 class="hero-title mb-6" id="mainTitle">Masa Depan Decentralized Finance (DeFi)<br><span class="arc-brand-gradient">di Arc Network</span></h1>
+            <p class="hero-desc mb-8" id="mainDesc">Nikmati pengalaman DeFi kelas dunia dengan keamanan institusional dan efisiensi teknologi Arc Network yang tak tertandingi</p>
+            
+            <button onclick="showView('swap')" class="bg-[#4338ca] text-white px-10 py-4 rounded-2xl font-bold text-sm uppercase shadow-2xl hover:scale-105 transition-transform mb-8">
+                Mulai Sekarang <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+
+            <div class="marquee-container">
+                <div class="marquee-content animate-left" id="marqueeList1"></div>
+            </div>
+
+            <div class="marquee-container">
+                <div class="marquee-content animate-right" id="marqueeList2"></div>
+            </div>
+
+            <div class="bottom-branding">
+                <div id="footerLabel" class="sub-footer-label uppercase">THE NEW STANDARD OF FINANCE</div>
+                <h2 id="footerTitle" class="hero-footer arc-brand-gradient">Elegansi Dalam Desentralisasi</h2>
+                <footer class="text-[9px] font-bold text-gray-400 tracking-[0.3em] uppercase">© 2026 SIREGAR FINANCE . ALL RIGHTS RESERVED</footer>
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW SWAP[cite: 1] -->
+    <main id="view-swap" class="view-section items-center justify-center pt-10">
+        <div class="w-full max-w-[440px] bg-white dark:bg-[#161b26] rounded-[32px] p-6 shadow-2xl border border-gray-100 dark:border-gray-800">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="swapTitleText" class="text-xl font-bold">Swap</h2>
+                <i class="fas fa-cog text-gray-400 cursor-pointer hover:rotate-90 transition-transform"></i>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-[#1f242f] rounded-2xl p-4 mb-1 border border-transparent hover:border-indigo-500 transition-all">
+                <div class="flex justify-between mb-2 text-xs font-bold text-gray-500">
+                    <span class="label-from">Dari</span> <span class="label-balance">Saldo: 0.0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <input type="number" placeholder="0.0" class="bg-transparent text-2xl font-bold outline-none w-1/2">
+                    <button onclick="openTokenModal('input1')" class="bg-white dark:bg-[#2d333f] shadow-sm rounded-xl px-3 py-2 flex items-center gap-2 hover:scale-105 transition-transform">
+                        <img id="logo1" src="https://cryptologos.cc/logos/usd-coin-usdc-logo.png" class="w-6 h-6 rounded-full">
+                        <span id="symbol1" class="font-bold">USDC</span>
+                        <i class="fas fa-chevron-down text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="relative h-2 flex justify-center z-10">
+                <button onclick="flipTokens()" class="absolute -top-4 bg-white dark:bg-[#161b26] border-4 border-gray-50 dark:border-[#0b0f19] w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform shadow-md">
+                    <i class="fas fa-arrow-down text-indigo-600"></i>
+                </button>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-[#1f242f] rounded-2xl p-4 mb-6 border border-transparent hover:border-indigo-500 transition-all">
+                <div class="flex justify-between mb-2 text-xs font-bold text-gray-500">
+                    <span class="label-to">Ke</span> <span class="label-balance">Saldo: 0.0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <input type="number" placeholder="0.0" class="bg-transparent text-2xl font-bold outline-none w-1/2">
+                    <button onclick="openTokenModal('input2')" class="bg-white dark:bg-[#2d333f] shadow-sm rounded-xl px-3 py-2 flex items-center gap-2 hover:scale-105 transition-transform">
+                        <img id="logo2" src="https://cryptologos.cc/logos/tether-usdt-logo.png" class="w-6 h-6 rounded-full">
+                        <span id="symbol2" class="font-bold">USDT</span>
+                        <i class="fas fa-chevron-down text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button id="mainSwapBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-bold text-lg shadow-lg transition-all active:scale-95">
+                Lakukan Swap
+            </button>
+        </div>
+    </main>
+
+    <!-- MODAL PENCARIAN TOKEN[cite: 1] -->
+    <div id="tokenModal" class="fixed inset-0 z-[2000] hidden flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div class="bg-white dark:bg-[#161b26] w-full max-w-[400px] rounded-[32px] overflow-hidden shadow-2xl">
+            <div class="p-6 border-b dark:border-gray-800">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-lg">Pilih Token</h3>
+                    <i onclick="closeTokenModal()" class="fas fa-times cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full text-gray-400"></i>
+                </div>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="tokenSearch" oninput="filterTokens()" placeholder="Cari nama atau smart contract (0x...)" 
+                    class="w-full bg-gray-50 dark:bg-[#1f242f] border-none rounded-2xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+            </div>
+            <div class="max-h-[350px] overflow-y-auto p-2" id="tokenList"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.min.js"></script>
+
+    <script>
+        const web3Modal = new Web3Modal.default({ cacheProvider: false, theme: "light" });
+        let currentConnectedNetwork = "";
+
+        // KONEKSI WALLET & DETEKSI JARINGAN[cite: 1]
+        async function connectWallet() {
+            const btn = document.getElementById('connectBtn');
+            try {
+                btn.innerText = "Connecting...";
+                const instance = await web3Modal.connect();
+                const provider = new ethers.providers.Web3Provider(instance);
+                const { chainId } = await provider.getNetwork();
+                const signer = provider.getSigner();
+                const address = await signer.getAddress();
+                
+                let netName = "Unknown";
+                if(chainId === 1) netName = "Mainnet";
+                else if(chainId === 5) netName = "Goerli";
+                else if(chainId === 11155111) netName = "Sepolia";
+                else if(chainId === 137) netName = "Polygon";
+                else netName = "Testnet (" + chainId + ")";
+
+                currentConnectedNetwork = netName;
+                const shortAddr = address.substring(0, 4) + "..." + address.substring(address.length - 4);
+                
+                btn.innerHTML = `<div class="flex flex-col items-end leading-none">
+                    <span class="text-[10px] opacity-80">${netName}</span>
+                    <span>${shortAddr}</span>
+                </div>`;
+                btn.style.background = "#059669"; 
+                
+                document.getElementById('mainSwapBtn').onclick = () => {
+                    alert(`Melakukan Swap di jaringan ${netName}...`);
+                };
+            } catch (e) { btn.innerText = "Connect Wallet"; }
+        }
+
+        const tokensRow1 = [
+            { name: "USDC", logo: "https://cryptologos.cc/logos/usd-coin-usdc-logo.png" },
+            { name: "SHIB", logo: "https://cryptologos.cc/logos/shiba-inu-shib-logo.png" },
+            { name: "ADA", logo: "https://cryptologos.cc/logos/cardano-ada-logo.png" },
+            { name: "LTC", logo: "https://cryptologos.cc/logos/litecoin-ltc-logo.png" },
+            { name: "ATOM", logo: "https://cryptologos.cc/logos/cosmos-atom-logo.png" },
+            { name: "PEPE", logo: "https://cryptologos.cc/logos/pepe-pepe-logo.png" },
+            { name: "XRP", logo: "https://cryptologos.cc/logos/xrp-xrp-logo.png" },
+            { name: "DOT", logo: "https://cryptologos.cc/logos/polkadot-new-dot-logo.png" }
+        ];
+
+        const tokensRow2 = [
+            { name: "USDT", logo: "https://cryptologos.cc/logos/tether-usdt-logo.png" },
+            { name: "TRX", logo: "https://cryptologos.cc/logos/tron-trx-logo.png" },
+            { name: "ZEC", logo: "https://cryptologos.cc/logos/zcash-zec-logo.png" },
+            { name: "XMR", logo: "https://cryptologos.cc/logos/monero-xmr-logo.png" },
+            { name: "BCH", logo: "https://cryptologos.cc/logos/bitcoin-cash-bch-logo.png" },
+            { name: "XLM", logo: "https://cryptologos.cc/logos/stellar-xlm-logo.png" },
+            { name: "TON", logo: "https://cryptologos.cc/logos/toncoin-ton-logo.png" },
+            { name: "AVAX", logo: "https://cryptologos.cc/logos/avalanche-avax-logo.png" }
+        ];
+
+        const allTokens = [...tokensRow1, ...tokensRow2];
+
+        // SISTEM MULTIBAHASA[cite: 1]
+        const translations = {
+            'ID': { 
+                title: 'Masa Depan Decentralized Finance (DeFi)<br><span class="arc-brand-gradient">di Arc Network</span>', 
+                desc: 'Nikmati pengalaman DeFi kelas dunia dengan keamanan institusional dan efisiensi teknologi Arc Network yang tak tertandingi',
+                heroBtn: 'Mulai Sekarang', nav: ['BERANDA', 'PORTOFOLIO', 'SWAP', 'POOLS', 'STAKE', 'FUTURE'],
+                swapTitle: 'Swap', swapBtn: 'Lakukan Swap', from: 'Dari', to: 'Ke', balance: 'Saldo'
+            },
+            'US': { 
+                title: 'The Future of Decentralized Finance (DeFi)<br><span class="arc-brand-gradient">on Arc Network</span>', 
+                desc: 'Experience world-class DeFi with institutional security and the unmatched technology efficiency of Arc Network',
+                heroBtn: 'Get Started', nav: ['HOME', 'PORTFOLIO', 'SWAP', 'POOLS', 'STAKE', 'FUTURE'],
+                swapTitle: 'Swap', swapBtn: 'Swap Now', from: 'From', to: 'To', balance: 'Balance'
+            },
+            'JP': { 
+                title: '分散型金融（DeFi）の未来<br><span class="arc-brand-gradient">Arc Network 上で</span>', 
+                desc: '機関投資家レベルのセキュリティと、Arc Network の比類のないテクノロジー効率による世界クラスの DeFi を体験してください',
+                heroBtn: '今すぐ始める', nav: ['ホーム', 'ポートフォリオ', 'スワップ', 'プール', 'ステーク', 'フューチャー'],
+                swapTitle: 'スワップ', swapBtn: '今すぐスワップ', from: 'から', to: 'まで', balance: '残高'
+            },
+            'KR': { 
+                title: '탈중앙화 금융(DeFi)의 미래<br><span class="arc-brand-gradient">Arc Network에서</span>', 
+                desc: '기관급 보안과 Arc Network의 타의 추종을 불허하는 기술 효율성을 갖춘 세계적 수준의 DeFi를 경험해 보세요',
+                heroBtn: '지금 시작하기', nav: ['홈', '포트폴리오', '스왑', '풀', '스테이크', '퓨처'],
+                swapTitle: '스왑', swapBtn: '지금 스왑', from: '보내기', to: '받기', balance: '잔액'
+            },
+            'MD': { 
+                title: 'Maso Depan Keuangan Desentralisasi (DeFi)<br><span class="arc-brand-gradient">di Arc Network</span>', 
+                desc: 'Nikmati pargoluon DeFi kelas dunia rap dohot keamanan institusional dot efisiensi teknologi Arc Network na soada tandinganna',
+                heroBtn: 'Mulai Sannari', nav: ['JABU', 'PORTOFOLIO', 'TUKAR', 'POOLS', 'STAKE', 'FUTURE'],
+                swapTitle: 'Tukar', swapBtn: 'Tukarkon Sannari', from: 'Tading', to: 'Tu', balance: 'Saldo'
+            }
+        };
+
+        function setLang(code, name) {
+            document.getElementById('curLang').innerText = code;
+            const t = translations[code];
+            if(t) {
+                if(document.getElementById('mainTitle')) document.getElementById('mainTitle').innerHTML = t.title;
+                if(document.getElementById('mainDesc')) document.getElementById('mainDesc').innerText = t.desc;
+                const heroBtn = document.querySelector('#view-dasbor button');
+                if(heroBtn) heroBtn.innerHTML = `${t.heroBtn} <i class="fas fa-arrow-right ml-2"></i>`;
+                
+                const navLinks = document.querySelectorAll("#mainNav .nav-link");
+                navLinks.forEach((link, i) => {
+                    if(i === 5) link.innerHTML = `${t.nav[i]} <span class="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded ml-1">NEW</span>`;
+                    else link.innerText = t.nav[i];
+                });
+
+                document.getElementById('swapTitleText').innerText = t.swapTitle;
+                document.getElementById('mainSwapBtn').innerText = t.swapBtn;
+                document.querySelector('.label-from').innerText = t.from;
+                document.querySelector('.label-to').innerText = t.to;
+                document.querySelectorAll('.label-balance').forEach(el => el.innerText = t.balance + ": 0.0");
+            }
+            closeAll();
+        }
+
+        // LOGIKA NAVIGASI[cite: 1]
+        function showView(viewId) {
+            document.querySelectorAll('main').forEach(m => m.classList.remove('active'));
+            const target = document.getElementById('view-' + viewId);
+            if(target) target.classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.remove('active');
+                if(l.getAttribute('onclick').includes(viewId)) l.classList.add('active');
+            });
+        }
+
+        // LOGIKA SWAP & TOKEN MODAL[cite: 1]
+        let activeSide = '';
+        function flipTokens() {
+            const s1 = document.getElementById('symbol1').innerText;
+            const l1 = document.getElementById('logo1').src;
+            const s2 = document.getElementById('symbol2').innerText;
+            const l2 = document.getElementById('logo2').src;
+            document.getElementById('symbol1').innerText = s2;
+            document.getElementById('logo1').src = l2;
+            document.getElementById('symbol2').innerText = s1;
+            document.getElementById('logo2').src = l1;
+        }
+
+        function openTokenModal(side) {
+            activeSide = side;
+            document.getElementById('tokenModal').classList.remove('hidden');
+            renderTokenList(allTokens);
+        }
+
+        function closeTokenModal() { document.getElementById('tokenModal').classList.add('hidden'); }
+
+        function renderTokenList(list) {
+            const container = document.getElementById('tokenList');
+            container.innerHTML = list.map(t => `
+                <div onclick="selectToken('${t.name}', '${t.logo}')" class="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-[#1f242f] cursor-pointer rounded-2xl transition-colors">
+                    <img src="${t.logo}" class="w-8 h-8 rounded-full">
+                    <div class="flex flex-col">
+                        <span class="font-bold">${t.name}</span>
+                        <span class="text-[10px] text-gray-500">0x${Math.random().toString(36).substr(2, 12)}...</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterTokens() {
+            const q = document.getElementById('tokenSearch').value.toLowerCase();
+            const filtered = allTokens.filter(t => t.name.toLowerCase().includes(q));
+            renderTokenList(filtered);
+        }
+
+        function selectToken(name, logo) {
+            const targetSymbol = activeSide === 'input1' ? 'symbol1' : 'symbol2';
+            const targetLogo = activeSide === 'input1' ? 'logo1' : 'logo2';
+            document.getElementById(targetSymbol).innerText = name;
+            document.getElementById(targetLogo).src = logo;
+            closeTokenModal();
+        }
+
+        function renderMarquees() {
+            const renderRow = (id, data) => {
+                const list = document.getElementById(id);
+                const content = data.map(t => `
+                    <div class="token-card">
+                        <img src="${t.logo}" class="w-5 h-5 rounded-full object-cover">
+                        <span class="font-bold text-xs">${t.name}</span>
+                    </div>
+                `).join('');
+                list.innerHTML = content + content;
+            };
+            renderRow('marqueeList1', tokensRow1);
+            renderRow('marqueeList2', tokensRow2);
+        }
+
+        // ANIMASI BACKGROUND PARTIKEL[cite: 1]
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let pts = [];
+        function init() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        class P {
+            constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.sx = Math.random()-0.5; this.sy = Math.random()-0.5; }
+            update() { this.x+=this.sx; this.y+=this.sy; if(this.x<0||this.x>canvas.width)this.sx*=-1; if(this.y<0||this.y>canvas.height)this.sy*=-1; }
+            draw() { 
+                ctx.fillStyle = '#5c3bb1'; ctx.beginPath(); ctx.arc(this.x,this.y,1,0,Math.PI*2); ctx.fill(); 
+                pts.forEach(p2 => {
+                    let d = Math.hypot(this.x-p2.x, this.y-p2.y);
+                    if(d < 100) { ctx.strokeStyle = `rgba(92, 59, 177, ${1 - d/100})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+                });
+            }
+        }
+        for(let i=0; i<60; i++) pts.push(new P());
+        function anim() { ctx.clearRect(0,0,canvas.width,canvas.height); pts.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(anim); }
+        
+        document.getElementById('modeToggle').onclick = () => { 
+            document.body.classList.toggle('dark-mode'); 
+            const icon = document.getElementById('modeToggle');
+            icon.classList.toggle('fa-moon'); icon.classList.toggle('fa-sun');
+        };
+
+        function closeAll() { document.querySelectorAll('.drop-menu').forEach(d => d.style.display = 'none'); }
+        function toggleDrop(id) {
+            const el = document.getElementById(id);
+            const isVisible = el.style.display === 'block';
+            document.querySelectorAll('.drop-menu').forEach(d => d.style.display = 'none');
+            el.style.display = isVisible ? 'none' : 'block';
+        }
+
+        init(); anim(); renderMarquees();
+        window.onresize = init;
+    </script>
+</body>
+</html>
